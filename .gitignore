@@ -1,43 +1,30 @@
-# Environment variables and secrets
-.env
-.env.*
-!.env.example
-
-# Python virtual environments
-.venv/
-venv/
-env/
-
-# Python cache and generated files
+# Python-generated files
 __pycache__/
-*.py[cod]
-*.egg-info/
+*.py[oc]
 .pytest_cache/
 .mypy_cache/
-
-# Build artifacts
+.ruff_cache/
 build/
 dist/
 wheels/
+*.egg-info/
+.coverage
+htmlcov/
 
-# Local databases and runtime files
-*.db
-*.sqlite
-*.sqlite3
-backend/uploads/
+# Virtual environments
+.venv/
 
-# IDE and operating-system files
-.vscode/
-.idea/
+# Next.js componenets
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.*
+!.env.example
+!.env.local.example
+*.log
 .DS_Store
 Thumbs.db
-
-# Next.js / Node.js
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-frontend/.env*
-!frontend/.env.example
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/pnpm-debug.log*
