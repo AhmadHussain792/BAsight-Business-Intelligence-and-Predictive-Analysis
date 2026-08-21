@@ -152,7 +152,7 @@ export default function Home() {
         <section className="rounded-xl border border-slate-300 bg-white p-6 shadow-md">
           <h2 className="text-lg font-semibold">Ask About Your Data</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Example: “What is the average amount?” or “Which row has the highest value?”
+            Example: “What is the average amount?” or “Which row has the highest value??”
           </p>
 
           <div className="mt-4 flex flex-col gap-3">
