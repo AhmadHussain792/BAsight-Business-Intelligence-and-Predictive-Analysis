@@ -31,3 +31,13 @@ backend/uploads/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Next.js / Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env*
+!frontend/.env.example
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/pnpm-debug.log*
