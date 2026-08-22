@@ -35,7 +35,7 @@ export default function TopProductsReceipt({ products, unavailableReason }: TopP
                 {product.revenue.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 })}
               </span>
             </div>
-            <div className="ml-7 mt-1 h-1 w-full bg-paper-ink/10">
+            <div className="ml-7 mt-1 h-1 w-5/6 bg-paper-ink/10">
               <div
                 className="h-1 bg-signal transition-all duration-700"
                 style={{ width: `${Math.max((product.revenue / maxRevenue) * 100, 3)}%` }}
