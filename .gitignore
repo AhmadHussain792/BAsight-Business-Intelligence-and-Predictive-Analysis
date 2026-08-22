@@ -21,9 +21,12 @@ out/
 build/
 *.tsbuildinfo
 next-env.d.ts
+
+# Environments
 .env
 .env.*
 !.env.example
+.env.local
 !.env.local.example
 *.log
 .DS_Store

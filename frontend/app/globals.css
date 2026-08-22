@@ -1,26 +1,137 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: theme("colors.ink.line");
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: theme("colors.ink.DEFAULT");
+  color: theme("colors.paper.DEFAULT");
+  font-feature-settings: "tnum" 1, "cv01" 1;
+}
+
+/* Visible keyboard focus everywhere, regardless of what element it lands on. */
+:focus-visible {
+  outline: 2px solid theme("colors.signal.DEFAULT");
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  /* Perforated ticket-stub edge: a dashed rule with punched dots at each end,
+     used on KPI cards to read as a torn-off ticket rather than a generic card. */
+  .perforated-top {
+    position: relative;
+    border-top: 1.5px dashed theme("colors.ink.line");
+  }
+  .perforated-top::before,
+  .perforated-top::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+    background: theme("colors.ink.DEFAULT");
+    border: 1.5px solid theme("colors.ink.line");
+  }
+  .perforated-top::before {
+    left: -5px;
+  }
+  .perforated-top::after {
+    right: -5px;
+  }
+
+  .perforated-bottom {
+    position: relative;
+    border-bottom: 1.5px dashed theme("colors.ink.line");
+  }
+  .perforated-bottom::before,
+  .perforated-bottom::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+    background: theme("colors.ink.DEFAULT");
+    border: 1.5px solid theme("colors.ink.line");
+  }
+  .perforated-bottom::before {
+    left: -5px;
+  }
+  .perforated-bottom::after {
+    right: -5px;
+  }
+
+  /* Subtle printed-halftone grain, evokes cheap ticket-stock printing rather
+     than a flat digital surface. Applied at low opacity so it reads as
+     texture, not pattern. */
+  .halftone {
+    background-image: theme("backgroundImage.halftone");
+    background-size: theme("backgroundSize.halftone-sm");
+  }
+
+  /* Barcode decoration built from CSS gradients, no image asset needed. */
+  .barcode {
+    background: repeating-linear-gradient(
+      90deg,
+      currentColor 0px,
+      currentColor 2px,
+      transparent 2px,
+      transparent 4px,
+      currentColor 4px,
+      currentColor 5px,
+      transparent 5px,
+      transparent 8px,
+      currentColor 8px,
+      currentColor 9px,
+      transparent 9px,
+      transparent 13px
+    );
+  }
+
+  .text-eyebrow {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .dotted-leader {
+    flex: 1;
+    border-bottom: 1.5px dotted theme("colors.ink.line");
+    margin: 0 8px;
+    min-width: 12px;
+    transform: translateY(-4px);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      theme("colors.paper.DEFAULT") 0%,
+      theme("colors.signal.soft") 50%,
+      theme("colors.paper.DEFAULT") 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
