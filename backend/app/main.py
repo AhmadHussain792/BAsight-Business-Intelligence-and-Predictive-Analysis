@@ -3,18 +3,21 @@ FastAPI application entrypoint. LLM chat is intentionally left out —
 that lands separately once it's built as a constrained tool-calling
 agent rather than open code-gen (see project notes).
 """
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .ingestion import EmptyFileError, UnsupportedFileError, clean_dataframe, read_uploaded_file
 from .insights import compute_insights
-from .models import DatasetListItem, DatasetResponse, SchemaResponse
+from .models import ChatRequest, ChatResponse, ChatToolCall, DatasetListItem, DatasetResponse, SchemaResponse
 from .schema_detection import build_column_schema, build_data_quality_report, detect_core_columns
 from .storage import DatasetNotFoundError, dataset_store
+from .agent.conversation_store import conversation_store
+from .agent.llm_factory import get_llm_client
+from .agent.orchestrator import run_agent_turn
 
 app = FastAPI(
-    title="Business Analyst API",
+    title="GenAI Business Analyst API",
     version="0.2.0",
     description="Data ingestion, cleaning, schema detection, and insights for the SME analytics platform.",
 )
@@ -158,3 +161,36 @@ def delete_dataset(dataset_id: str):
     except DatasetNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return {"status": "deleted", "dataset_id": dataset_id}
+
+
+@app.post("/api/datasets/{dataset_id}/chat", response_model=ChatResponse)
+def chat_with_dataset(dataset_id: str, request: ChatRequest, llm=Depends(get_llm_client)):
+    try:
+        record = dataset_store.get(dataset_id)
+    except DatasetNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    history = conversation_store.get_history(dataset_id)
+    try:
+        result = run_agent_turn(llm, record, history, request.message)
+    except Exception as exc:  # noqa: BLE001 — a request-time LLM call failure (auth, network,
+        # quota) should reach the client as a clean 503, not an unhandled 500 with a raw
+        # traceback. Broad on purpose: the failure modes here span multiple exception types
+        # (google.auth errors, google.genai API errors, network errors) that aren't worth
+        # enumerating individually — anything from the LLM call itself is a service
+        # availability problem from the caller's point of view, not a client error.
+        raise HTTPException(status_code=503, detail=f"Chat is temporarily unavailable: {exc}") from exc
+
+    conversation_store.save_history(dataset_id, result.messages)
+
+    return ChatResponse(
+        answer=result.answer,
+        tool_calls=[ChatToolCall(name=tc.name, ok=tc.ok, summary=tc.summary) for tc in result.tool_calls],
+        hit_iteration_limit=result.hit_iteration_limit,
+    )
+
+
+@app.delete("/api/datasets/{dataset_id}/chat")
+def reset_chat(dataset_id: str):
+    conversation_store.clear(dataset_id)
+    return {"status": "cleared", "dataset_id": dataset_id}

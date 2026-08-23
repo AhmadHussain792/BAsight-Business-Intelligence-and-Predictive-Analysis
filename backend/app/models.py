@@ -88,3 +88,19 @@ class DatasetListItem(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatToolCall(BaseModel):
+    name: str
+    ok: bool
+    summary: str
+
+
+class ChatResponse(BaseModel):
+    answer: Optional[str] = None
+    tool_calls: list[ChatToolCall] = Field(default_factory=list)
+    hit_iteration_limit: bool = False

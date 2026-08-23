@@ -31,7 +31,11 @@ class DatasetRecord:
     created_at: datetime
 
 
-class DatasetNotFoundError(KeyError):
+class DatasetNotFoundError(LookupError):
+    # Plain LookupError, not KeyError — KeyError.__str__() adds its own
+    # surrounding quotes around the message, which double up when this
+    # message (already quoted internally) gets rendered in an HTTP error
+    # body. LookupError has no such quirk.
     pass
 
 

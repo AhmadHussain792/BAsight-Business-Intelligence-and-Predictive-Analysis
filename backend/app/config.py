@@ -36,5 +36,14 @@ class Settings:
     # Row-null threshold for flagging a column as low quality.
     HIGH_NULL_WARNING_THRESHOLD: float = 0.3
 
+    # Google Cloud (Vertex AI / Gemini Enterprise Agent Platform) — used for
+    # the chat agent. Location defaults to us-central1 per this project's
+    # deployment choice; override via env if you deploy against a different
+    # region. Auth is via Application Default Credentials, not an API key —
+    # see agent/README.md.
+    GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+    GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
 
 settings = Settings()
