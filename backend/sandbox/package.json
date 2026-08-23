@@ -1,0 +1,10 @@
+{
+  "name": "genai-ba-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated Pyodide/WASM sandbox for LLM-generated fallback code execution — see README.md",
+  "type": "module",
+  "dependencies": {
+    "pyodide": "^314.0.3"
+  }
+}
