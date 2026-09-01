@@ -15,7 +15,7 @@ function validateFile(file: File): string | null {
   const lowerName = file.name.toLowerCase();
   const hasAllowedExtension = ALLOWED_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
   if (!hasAllowedExtension) {
-    return `Ledger reads spreadsheets, not this. Use ${ALLOWED_EXTENSIONS.join(", ")}.`;
+    return `BAsight reads spreadsheets, not this. Use ${ALLOWED_EXTENSIONS.join(", ")}.`;
   }
   if (file.size > MAX_SIZE_MB * 1024 * 1024) {
     return `That file is over the ${MAX_SIZE_MB}MB limit. Trim it down and try again.`;
@@ -59,7 +59,7 @@ export default function UploadScreen({ onFileSelected, errorMessage }: UploadScr
 
       <div className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 py-16">
         <div className="mb-10 text-center">
-          <p className="text-eyebrow mb-4 text-xs text-signal">No. 001 &nbsp;·&nbsp; Sales Ledger Intake</p>
+          <p className="text-eyebrow mb-4 text-xs text-signal">BAsight &nbsp;·&nbsp; Business Intelligence &amp; Predictive Analytics</p>
           <h1 className="font-display text-6xl font-extrabold uppercase leading-[0.92] tracking-tight sm:text-8xl">
             Ring up
             <br />
@@ -131,7 +131,7 @@ export default function UploadScreen({ onFileSelected, errorMessage }: UploadScr
         )}
 
         <p className="text-eyebrow mt-12 text-[10px] text-paper/25">
-          Ledger &nbsp;/&nbsp; Business Analyst
+          BAsight &nbsp;/&nbsp; Built for financial decision-making
         </p>
       </div>
     </main>

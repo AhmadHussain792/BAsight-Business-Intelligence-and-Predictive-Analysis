@@ -8,12 +8,7 @@ interface RevealProps {
   className?: string;
 }
 
-/**
- * Fades + rises its children in the first time they scroll into view.
- * A one-shot orchestrated reveal (per element) rather than continuous
- * scroll-linked motion — deliberate per the "one orchestrated moment
- * beats scattered effects" guidance.
- */
+// fades + rises its children in the first time user scrolls into view.
 export default function Reveal({ children, delayMs = 0, className = "" }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);

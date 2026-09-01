@@ -19,18 +19,10 @@ function runInWorker(code, csvData, timeoutMs) {
   return new Promise((resolve) => {
     const worker = new Worker(WORKER_PATH, {
       workerData: { code, csvData },
-      env: {}, // No inherited environment — nothing sensitive for sandboxed code to reach.
+
+      env: {}, // no inherited environment so nothing sensitive for sandboxed code to reach.
       resourceLimits: {
-        // Caps worst-case memory blowup, but generously — these were an
-        // untested guess during initial development (no way to load real
-        // pandas/numpy in that dev environment to measure actual footprint).
-        // 128MB young-gen in particular was likely too tight for
-        // Pyodide+pandas+numpy together; a hit here kills the worker via a
-        // forced heap-limit termination, which isn't a catchable JS
-        // exception — it would bypass even the WORKER_INIT_ERROR safety net
-        // in pyodide_worker.mjs and just show up as another bare exit code.
-        // If WORKER_EXIT_1 (with no further detail from that safety net)
-        // keeps happening after that fix, raise these further.
+        // caps worst-case memory blowup
         maxOldGenerationSizeMb: 1536,
         maxYoungGenerationSizeMb: 512,
       },

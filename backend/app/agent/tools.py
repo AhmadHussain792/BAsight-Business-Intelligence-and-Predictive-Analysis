@@ -1,14 +1,12 @@
 """
-Tool implementations. Each takes the real cleaned DataFrame (never a copy
-the LLM could poison) plus validated arguments, and returns a result object
-that either carries a value or a plain-English error — never raises, since
-a bad column name from the LLM should be something it can see and retry,
-not a crashed turn.
+Each tool takes the real cleaned DataFrame plus validated arguments, and returns 
+a result object that either carries a value or a plain-English error. 
+the error is used by LLM for self-correction.
 
-Every result includes a `trace`: an exact, human-readable description of
-what was computed (which columns, which filters, which aggregation). This
-is what lets the orchestrator's final answer cite real computations instead
-of the LLM's own arithmetic.
+Every result includes a `trace` string: an exact, description of
+what was computed (columns, filters, aggregation) to ensure 
+chat answer follows real arithmetic instead of LLM hallucination
+>>>>>>> b485336 (Added visuals such as charts, stylized texts, etc for each tool call in the LLM response to enhance user experience. Updated Vertex AI client to enable config of model's thinking capacity for both 2.x and 3.x generations. Wrote detailed README.md for the project)
 """
 import pandas as pd
 
@@ -39,9 +37,8 @@ def _pick_granularity(date_series: pd.Series) -> tuple[str, str]:
 
 
 def _coerce_value(series: pd.Series, value):
-    """Best-effort coercion of a filter value to the column's actual dtype,
-    so e.g. a string "100" from the LLM still matches an int column, and a
-    date string still compares correctly against a datetime column."""
+
+    # coercion of a filter value to the column's actual dtype
     if pd.api.types.is_datetime64_any_dtype(series):
         try:
             return pd.to_datetime(value)
@@ -118,7 +115,9 @@ def query_metric(df: pd.DataFrame, args: QueryMetricArgs) -> QueryMetricResult:
         group_series = working[args.group_by]
         granularity_used = None
 
-        if pd.api.types.is_datetime64_any_dtype(group_series):
+        is_time_series = pd.api.types.is_datetime64_any_dtype(group_series)
+
+        if is_time_series:
             if args.time_granularity:
                 rule, granularity_used = _GRANULARITY_RULES[args.time_granularity], args.time_granularity
             else:
@@ -139,15 +138,31 @@ def query_metric(df: pd.DataFrame, args: QueryMetricArgs) -> QueryMetricResult:
             QueryMetricResultRow(group=group_label(k), value=None if pd.isna(v) else float(v))
             for k, v in agg_series.items()
         ]
-        rows.sort(key=lambda r: (r.value is not None, r.value), reverse=args.sort_descending)
-        if args.limit:
-            rows = rows[: args.limit]
+
+
+        if is_time_series:
+            # sorting a time series by value mixes the x-axis into a meaningless order for both a chart and any explanation built from these rows
+            # ISO date strings (YYYY-MM-DD) do not need parsing as they sort as plain strings
+            rows.sort(key=lambda r: r.group or "")
+            if args.limit:
+                # show most recent N as "show me last N weeks" is more common for analytics
+                rows = rows[-args.limit :]
+        else:
+            rows.sort(key=lambda r: (r.value is not None, r.value), reverse=args.sort_descending)
+            if args.limit:
+                rows = rows[: args.limit]
 
         trace = f"{metric_desc} grouped by {args.group_by}{filter_desc}"
         if granularity_used:
             trace += f" ({granularity_used} buckets)"
         return QueryMetricResult(
-            ok=True, rows=rows, matching_row_count=len(working), granularity_used=granularity_used, trace=trace
+
+            ok=True,
+            rows=rows,
+            matching_row_count=len(working),
+            granularity_used=granularity_used,
+            metric_column=None if is_row_count else args.metric_column,
+            trace=trace,
         )
 
     value = len(working) if is_row_count else working[args.metric_column].agg(args.aggregation)
@@ -156,6 +171,8 @@ def query_metric(df: pd.DataFrame, args: QueryMetricArgs) -> QueryMetricResult:
         ok=True,
         rows=[QueryMetricResultRow(group=None, value=value)],
         matching_row_count=len(working),
+
+        metric_column=None if is_row_count else args.metric_column,
         trace=f"{metric_desc}{filter_desc}",
     )
 
@@ -204,7 +221,11 @@ def simulate_scenario(df: pd.DataFrame, core_columns: dict[str, str], args: Simu
         delta_pct=delta_pct,
         rows_used=len(valid),
         assumptions=assumptions,
-        trace=f"Simulated price/volume scenario{filter_desc}, {len(valid)} rows used",
+
+        trace=(
+            f"Simulated {args.price_change_pct:+.1f}% price change "
+            f"(elasticity {args.assumed_demand_elasticity:+.2f}){filter_desc}, {len(valid)} rows used"
+        ),
     )
 
 
@@ -213,4 +234,5 @@ def execute_custom_analysis(df: pd.DataFrame, code: str) -> CustomAnalysisResult
     outcome = run_sandboxed_code(code=code, csv_data=csv_data, timeout_ms=15000)
     if not outcome.ok:
         return CustomAnalysisResult(ok=False, error=outcome.error)
+
     return CustomAnalysisResult(ok=True, result=outcome.result)

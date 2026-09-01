@@ -24,8 +24,8 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ledger — Sales Analytics",
-  description: "Upload your sales data. Get a clean read on the numbers in seconds.",
+  title: "BAsight — Business Intelligence & Predictive Analytics",
+  description: "Upload your sales data. Get a clean read on the numbers, and ask it questions, in seconds.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

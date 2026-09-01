@@ -1,6 +1,4 @@
-// Mirrors app/models.py on the backend. Keep in sync manually — small
-// enough surface area that generating this from the OpenAPI schema isn't
-// worth the build-step complexity yet.
+// Mirrors app/models.py on the backend
 
 export interface ColumnSchema {
   name: string;
@@ -73,4 +71,62 @@ export class ApiError extends Error {
     this.status = status;
     this.name = "ApiError";
   }
+}
+
+// --- Chat / agent types, mirroring app/agent/schemas.py and the ChatResponse model ---
+
+export interface QueryMetricRow {
+  group: string | null;
+  value: number | null;
+}
+
+export interface QueryMetricData {
+  ok: boolean;
+  rows: QueryMetricRow[];
+  matching_row_count: number | null;
+  granularity_used: string | null;
+  metric_column: string | null;
+  trace: string;
+  error: string | null;
+}
+
+export interface SimulateScenarioData {
+  ok: boolean;
+  baseline_revenue: number | null;
+  projected_revenue: number | null;
+  delta: number | null;
+  delta_pct: number | null;
+  rows_used: number | null;
+  assumptions: string;
+  trace: string;
+  error: string | null;
+}
+
+export interface CustomAnalysisData {
+  ok: boolean;
+  result: unknown;
+  error: string | null;
+}
+
+export type ToolResultData = QueryMetricData | SimulateScenarioData | CustomAnalysisData;
+
+export interface ChatToolCall {
+  name: "query_metric" | "simulate_scenario" | "execute_custom_analysis" | string;
+  ok: boolean;
+  summary: string;
+  data: Record<string, unknown>;
+}
+
+export interface ChatResponse {
+  answer: string | null;
+  tool_calls: ChatToolCall[];
+  hit_iteration_limit: boolean;
+}
+
+export interface ChatTurn {
+  id: string;
+  question: string;
+  response: ChatResponse | null;
+  isLoading: boolean;
+  errorMessage: string | null;
 }

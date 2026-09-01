@@ -16,7 +16,7 @@ body {
   font-feature-settings: "tnum" 1, "cv01" 1;
 }
 
-/* Visible keyboard focus everywhere, regardless of what element it lands on. */
+/* visible keyboard focus everywhere regardless of what element it lands on. */
 :focus-visible {
   outline: 2px solid theme("colors.signal.DEFAULT");
   outline-offset: 2px;
@@ -35,8 +35,8 @@ body {
 }
 
 @layer utilities {
-  /* Perforated ticket-stub edge: a dashed rule with punched dots at each end,
-     used on KPI cards to read as a torn-off ticket rather than a generic card. */
+  /* perforated ticket-stub edge: a dashed rule with punched dots at each end
+     used on KPI cards to read as a torn-off ticket */
   .perforated-top {
     position: relative;
     border-top: 1.5px dashed theme("colors.ink.line");
@@ -82,14 +82,14 @@ body {
   }
 
   /* Subtle printed-halftone grain, evokes cheap ticket-stock printing rather
-     than a flat digital surface. Applied at low opacity so it reads as
-     texture, not pattern. */
+     than a flat digital surface. applied at low opacity so it reads as
+     texture */
   .halftone {
     background-image: theme("backgroundImage.halftone");
     background-size: theme("backgroundSize.halftone-sm");
   }
 
-  /* Barcode decoration built from CSS gradients, no image asset needed. */
+  /* Barcode decoration built from CSS gradients */
   .barcode {
     background: repeating-linear-gradient(
       90deg,

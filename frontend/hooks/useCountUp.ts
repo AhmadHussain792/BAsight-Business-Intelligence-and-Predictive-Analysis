@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Animates a number counting up from 0 to `target` once, on mount.
- * Respects prefers-reduced-motion by jumping straight to the target.
+ * animates a number counting up from 0 to `target`.
  */
 export function useCountUp(target: number, durationMs = 900): number {
   const [value, setValue] = useState(0);
@@ -39,7 +38,6 @@ export function useCountUp(target: number, durationMs = 900): number {
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, durationMs]);
 
   return value;

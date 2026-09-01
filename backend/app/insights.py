@@ -1,19 +1,16 @@
-"""
-Computes the dashboard metrics from a cleaned DataFrame + detected
-core columns. Every metric degrades gracefully: if a required column
-role wasn't found, the metric is omitted and a human-readable reason
-is added to `unavailable_metrics` instead of raising.
-"""
+
+# computes the dashboard metrics from a cleaned DataFrame + detected core columns. 
+# if a required column role wasn't found, the metric is omitted and a reason is added to `unavailable_metrics`.
+
 import pandas as pd
 
 from .models import CategoryInsight, InsightsResponse, ProductInsight, TimeSeriesPoint
 
 TOP_N_PRODUCTS = 10
 
-
+# derive a revenue column if there's no explicit revenue/sales column but price and quantity both exist
 def _ensure_revenue_column(df: pd.DataFrame, core: dict[str, str]) -> tuple[pd.DataFrame, dict[str, str]]:
-    """If there's no explicit revenue column but price and quantity both
-    exist, derive one. Returns a (possibly) modified copy of df and core."""
+    
     if "revenue" in core:
         return df, core
 
@@ -25,17 +22,16 @@ def _ensure_revenue_column(df: pd.DataFrame, core: dict[str, str]) -> tuple[pd.D
 
     return df, core
 
-
-def _pick_time_granularity(date_series: pd.Series) -> tuple[str, str]:
-    """Returns (pandas resample rule, human label) based on the span of
+"""Returns (pandas resample rule, human label) based on the span of
     the date range, so a 3-day dataset isn't bucketed by month and a
     3-year dataset isn't plotted daily."""
+def _pick_time_granularity(date_series: pd.Series) -> tuple[str, str]:
     span_days = (date_series.max() - date_series.min()).days
     if span_days <= 45:
         return "D", "daily"
     if span_days <= 180:
         return "W", "weekly"
-    return "ME", "monthly"  # 'ME' = month-end anchor; pandas deprecated bare 'M' in 2.2+
+    return "ME", "monthly"  # 'ME' = month-end anchor
 
 
 def compute_insights(df: pd.DataFrame, core_columns: dict[str, str]) -> InsightsResponse:
@@ -105,8 +101,7 @@ def compute_insights(df: pd.DataFrame, core_columns: dict[str, str]) -> Insights
                     )
                 )
 
-            # Period-over-period: compare first half vs second half of the
-            # date range by total revenue.
+            # Period-over-period: compare first half vs second half of the date range by total revenue
             midpoint = ts_df[date_col].min() + (ts_df[date_col].max() - ts_df[date_col].min()) / 2
             first_half = ts_df[ts_df[date_col] <= midpoint][core["revenue"]].sum()
             second_half = ts_df[ts_df[date_col] > midpoint][core["revenue"]].sum()

@@ -1,8 +1,5 @@
-"""
-FastAPI application entrypoint. LLM chat is intentionally left out —
-that lands separately once it's built as a constrained tool-calling
-agent rather than open code-gen (see project notes).
-"""
+# FastAPI application entrypoint.
+
 from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -78,7 +75,7 @@ async def upload_dataset(file: UploadFile):
         clean_df, cleaning_report = clean_dataframe(raw_df)
     except (UnsupportedFileError, EmptyFileError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:  # last-resort guard so a bad file 500s cleanly, not silently
+    except Exception as exc:  # last-resort guard so a bad file returns 500 error code cleanly instead of a traceback
         raise HTTPException(status_code=400, detail=f"Could not process file: {exc}") from exc
 
     if clean_df.empty:
@@ -90,8 +87,6 @@ async def upload_dataset(file: UploadFile):
     columns = build_column_schema(clean_df)
     core_columns = detect_core_columns(columns)
     data_quality = build_data_quality_report(clean_df, columns)
-    # Surface cleaning-time assumptions (e.g. ambiguous date format guesses)
-    # as warnings too, rather than dropping them on the floor.
     data_quality.warnings.extend(
         f"Column '{col}': {note}" for col, note in cleaning_report.date_format_notes.items()
     )
@@ -173,11 +168,8 @@ def chat_with_dataset(dataset_id: str, request: ChatRequest, llm=Depends(get_llm
     history = conversation_store.get_history(dataset_id)
     try:
         result = run_agent_turn(llm, record, history, request.message)
-    except Exception as exc:  # noqa: BLE001 — a request-time LLM call failure (auth, network,
-        # quota) should reach the client as a clean 503, not an unhandled 500 with a raw
-        # traceback. Broad on purpose: the failure modes here span multiple exception types
-        # (google.auth errors, google.genai API errors, network errors) that aren't worth
-        # enumerating individually — anything from the LLM call itself is a service
+    except Exception as exc:  
+        # a request-time LLM call failure (auth, network, quota) should reach the client as a clean 503
         # availability problem from the caller's point of view, not a client error.
         raise HTTPException(status_code=503, detail=f"Chat is temporarily unavailable: {exc}") from exc
 
@@ -185,7 +177,7 @@ def chat_with_dataset(dataset_id: str, request: ChatRequest, llm=Depends(get_llm
 
     return ChatResponse(
         answer=result.answer,
-        tool_calls=[ChatToolCall(name=tc.name, ok=tc.ok, summary=tc.summary) for tc in result.tool_calls],
+        tool_calls=[ChatToolCall(name=tc.name, ok=tc.ok, summary=tc.summary, data=tc.data) for tc in result.tool_calls],
         hit_iteration_limit=result.hit_iteration_limit,
     )
 

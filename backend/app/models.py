@@ -1,10 +1,5 @@
-"""
-Pydantic schemas for API request/response bodies. Keeping these
-separate from the pandas-facing logic means FastAPI validates and
-documents the API surface for free (see /docs).
-"""
+# Pydantic schemas for API request/response bodies.
 from typing import Any, Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -98,6 +93,7 @@ class ChatToolCall(BaseModel):
     name: str
     ok: bool
     summary: str
+    data: dict = Field(default_factory=dict)
 
 
 class ChatResponse(BaseModel):

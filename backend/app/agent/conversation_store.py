@@ -1,9 +1,6 @@
-"""
-Per-dataset conversation history, mirroring storage.py's DatasetStore shape
-(in-memory, TTL-evicted, thread-safe). Kept as a separate store rather than
-bolted onto DatasetRecord — a dataset can outlive many conversations about
-it, and the two have different natural lifecycles.
-"""
+# per-dataset conversation history, same as storage.py DatasetStore shape (in-memory, TTL-evicted, thread-safe)
+# kept separate so that a dataset (in DatasetRecord) can have many conversations about it
+
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone

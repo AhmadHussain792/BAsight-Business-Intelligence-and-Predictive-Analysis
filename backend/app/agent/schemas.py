@@ -1,9 +1,5 @@
-"""
-Typed argument/result schemas for every agent tool. The argument schemas
-double as the JSON-schema source for function-calling (see tool_specs.py) —
-defining them once here and deriving the LLM-facing spec from them keeps
-the two from drifting apart.
-"""
+
+# argument/result schemas for every agent tool that act as the JSON-schema source for function-calling (in tool_specs.py)
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -61,6 +57,8 @@ class QueryMetricResult(BaseModel):
     rows: list[QueryMetricResultRow] = Field(default_factory=list)
     matching_row_count: Optional[int] = None
     granularity_used: Optional[str] = None
+
+    metric_column: Optional[str] = None
     trace: str = ""
     error: Optional[str] = None
 

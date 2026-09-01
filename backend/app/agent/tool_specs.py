@@ -1,9 +1,4 @@
-"""
-Tool specs in OpenAI's function-calling format, derived from the Pydantic
-argument schemas in schemas.py rather than hand-written separately — so a
-field added there shows up here automatically instead of silently drifting
-out of sync with what the tool functions actually accept.
-"""
+# tool specs in OpenAI function-calling format, derived from the Pydantic argument schemas in schemas.py.
 from .schemas import ExecuteCustomAnalysisArgs, QueryMetricArgs, SimulateScenarioArgs
 
 QUERY_METRIC_DESCRIPTION = (
@@ -30,9 +25,6 @@ EXECUTE_CUSTOM_ANALYSIS_DESCRIPTION = (
 
 def _to_openai_tool(name: str, description: str, model) -> dict:
     schema = model.model_json_schema()
-    # Pydantic emits $defs for nested models (FilterCondition); OpenAI's tool
-    # schema validator wants a single flat object, so nested refs are fine to
-    # leave as-is — OpenAI resolves internal $ref/$defs correctly.
     schema.pop("title", None)
     return {
         "type": "function",

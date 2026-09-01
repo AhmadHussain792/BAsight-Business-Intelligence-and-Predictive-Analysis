@@ -4,18 +4,15 @@ the tool specs, dispatches whatever tools it asks for against the real
 DataFrame, feeds results back, and repeats until the model gives a final
 text answer or a safety iteration cap is hit.
 
-Design choices worth calling out:
-  - Every tool call is dispatched through a fixed dict, never eval'd or
-    dynamically resolved from the model's output — an unknown tool name
-    is an error result fed back to the model, not a lookup into anything
-    that could be pointed somewhere unintended.
-  - Bad arguments (wrong enum value, missing required field) are caught as
+
+- every tool call is done through a fixed dict, never eval'd or
+    dynamically resolved from the model's output and an unknown tool name
+    is an error result fed back to the model
+- bad arguments (wrong enum value, missing required field) are caught as
     a Pydantic ValidationError and turned into a plain-English tool-result
-    error, not an exception that aborts the turn — the model can see what
-    was wrong and retry, the same way a human would react to an API 400.
-  - max_iterations bounds runaway tool-call loops (cost + latency), and is
-    reported distinctly from a normal answer so the caller can tell the
-    difference between "here's the answer" and "gave up after N tool calls".
+    error that the model can see to understand what was wrong and retry
+- max_iterations bounds runaway tool-call loops (cost + latency), and is
+    reported differently from a normal answer
 """
 from dataclasses import dataclass, field
 from typing import Callable
@@ -57,13 +54,15 @@ class ToolCallRecord:
     ok: bool
     summary: str
 
+    data: dict = field(default_factory=dict)
+
 
 @dataclass
 class AgentTurnResult:
     answer: str | None
     tool_calls: list[ToolCallRecord] = field(default_factory=list)
     hit_iteration_limit: bool = False
-    messages: list[dict] = field(default_factory=list)  # full updated history, to persist
+    messages: list[dict] = field(default_factory=list)  # full updated history
 
 
 def _build_system_prompt(record: DatasetRecord) -> str:
@@ -74,9 +73,10 @@ def _build_system_prompt(record: DatasetRecord) -> str:
     return SYSTEM_PROMPT_TEMPLATE.format(filename=record.filename, column_summary="\n".join(lines))
 
 
-def _dispatch_tool(name: str, arguments: dict, record: DatasetRecord) -> tuple[str, bool]:
-    """Returns (result_text_for_llm, ok). Never raises — any failure becomes
-    a result the model can react to."""
+# returns (result_text_for_llm, ok, result_data).
+# result_data is the full parsed result (never truncated) carried to the frontend 
+# result_text_for_llm is the same data serialized which the LLM reads
+def _dispatch_tool(name: str, arguments: dict, record: DatasetRecord) -> tuple[str, bool, dict]:
     try:
         if name == "query_metric":
             args = QueryMetricArgs.model_validate(arguments)
@@ -88,11 +88,15 @@ def _dispatch_tool(name: str, arguments: dict, record: DatasetRecord) -> tuple[s
             args = ExecuteCustomAnalysisArgs.model_validate(arguments)
             result = execute_custom_analysis(record.df, args.code)
         else:
-            return f"Unknown tool '{name}'. Available tools: query_metric, simulate_scenario, execute_custom_analysis.", False
-    except ValidationError as e:
-        return f"Invalid arguments for {name}: {e}", False
 
-    return result.model_dump_json(), result.ok
+            error_text = f"Unknown tool '{name}'. Available tools: query_metric, simulate_scenario, execute_custom_analysis."
+            return error_text, False, {"error": error_text}
+    except ValidationError as e:
+        error_text = f"Invalid arguments for {name}: {e}"
+        return error_text, False, {"error": error_text}
+
+    result_text = result.model_dump_json()
+    return result_text, result.ok, result.model_dump(mode="json")
 
 
 def run_agent_turn(
@@ -117,7 +121,8 @@ def run_agent_turn(
 
         # OpenAI's protocol: the assistant message carrying tool_calls goes in
         # first, then one role="tool" message per call, each tagged with its
-        # tool_call_id so the model can match results back to its requests.
+
+        # tool_call_id so the model can match results back to its requests
         messages.append(
             {
                 "role": "assistant",
@@ -134,8 +139,11 @@ def run_agent_turn(
         )
 
         for tc in response.tool_calls:
-            result_text, ok = _dispatch_tool(tc.name, tc.arguments, record)
-            tool_call_log.append(ToolCallRecord(name=tc.name, arguments=tc.arguments, ok=ok, summary=result_text[:300]))
+
+            result_text, ok, result_data = _dispatch_tool(tc.name, tc.arguments, record)
+            tool_call_log.append(
+                ToolCallRecord(name=tc.name, arguments=tc.arguments, ok=ok, summary=result_text[:300], data=result_data)
+            )
             messages.append({"role": "tool", "tool_call_id": tc.id, "name": tc.name, "content": result_text})
 
     return AgentTurnResult(answer=None, tool_calls=tool_call_log, hit_iteration_limit=True, messages=messages)

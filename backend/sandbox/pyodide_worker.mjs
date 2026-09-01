@@ -2,35 +2,14 @@ import { parentPort, workerData } from "worker_threads";
 import { loadPyodide } from "pyodide";
 
 /**
- * Runs inside a worker_thread, spawned fresh per code-execution request by
- * entrypoint.mjs. Security properties (verified during development, see
- * backend/sandbox/README.md):
+
+ * runs inside a worker_thread, spawned per code-execution request by entrypoint.mjs
  *
- *  - Hard timeout: entrypoint.mjs kills this worker via terminate() after a
- *    deadline. This is NOT the same as an in-process timeout — a same-thread
- *    Promise.race cannot interrupt a blocking WASM loop, since the loop never
- *    yields back to the event loop for the timer to fire. terminate() works
- *    because it stops the underlying V8 isolate/thread from the outside.
- *  - No host filesystem access: Pyodide's Python open() operates on an
- *    isolated in-memory virtual filesystem, not the real disk.
- *  - No network access from sandboxed code: no fetch/socket bridge is
- *    exposed to the executed code.
- *  - No host secrets: the worker is spawned with an empty environment
- *    (entrypoint.mjs sets env: {}), so even if something reached
- *    js.process.env, there'd be nothing sensitive in it.
- *  - js/pyodide_js/micropip imports are blocked outright inside the
- *    executed code, as defense in depth beyond the empty env — this is what
- *    stops code from reaching the host JS/Node layer at all (confirmed
- *    during testing that js.process is reachable by default, an everyday
- *    Node global, not gated by Pyodide).
+ * hard timeout: entrypoint.mjs kills this worker via terminate() after a deadline 
+ * terminate() stops the underlying V8 isolate/thread from the outside
  *
- * Note on style: every Python snippet below assigns its result to a named
- * global and fetches it via pyodide.globals.get(name), rather than relying
- * on runPython's "return the last bare expression" semantics. That implicit
- * behavior only applies when the final top-level statement is itself a bare
- * expression — it silently returns undefined for anything ending in an
- * assignment or a try/except block, which cost real debugging time here.
- * Explicit globals.get() has no such gotcha.
+ * every Python snippet below assigns its result to a named global and fetches it via pyodide.globals.get(name)
+>>>>>>> b485336 (Added visuals such as charts, stylized texts, etc for each tool call in the LLM response to enhance user experience. Updated Vertex AI client to enable config of model's thinking capacity for both 2.x and 3.x generations. Wrote detailed README.md for the project)
  */
 
 function getGlobal(pyodide, name) {
@@ -39,19 +18,13 @@ function getGlobal(pyodide, name) {
 }
 
 async function main() {
-  // Pyodide's default stdout/stderr writes through a raw file-descriptor
-  // path that is broken inside a worker_thread (observed during testing:
-  // it floods stderr with repeated ERR_INVALID_ARG_TYPE writes whenever
-  // Python prints anything, e.g. an uncaught traceback). Routing through
-  // explicit JS callbacks avoids that path entirely.
   const pyodide = await loadPyodide({
     stdout: () => {},
     stderr: () => {},
   });
 
-  // loadPackage does NOT reliably throw on failure (observed during testing
-  // — a failed fetch logs a warning and resolves normally). The real signal
-  // is whether `import pandas` succeeds afterward, checked explicitly below.
+
+  // `import pandas` success checked explicitly as loadPackage does not reliably throw on failure
   try {
     await pyodide.loadPackage(["pandas", "numpy"]);
   } catch (e) {
@@ -82,10 +55,9 @@ except ImportError as e:
     return;
   }
 
-  // Reconstruct the dataset inside the sandbox from the CSV string passed in.
-  // Using CSV (not a live DataFrame handle) is deliberate: it's the simplest
-  // thing that can cross the process boundary as plain data, with no shared
-  // mutable state between the real backend's DataFrame and the sandbox's copy.
+
+  // reconstruct the dataset inside the sandbox from the CSV string passed in
+  // using CSV passed as plain data ensures no shared mutable state between the backend DataFrame and the sandbox copy
   pyodide.globals.set("_csv_data", workerData.csvData);
 
   pyodide.runPython(`
@@ -116,10 +88,7 @@ except Exception as e:
   }
 
   try {
-    // User code must assign to `result`. Deliberately not relying on
-    // "last expression" semantics here either — we don't control what
-    // shape of code the LLM writes (loops, assignments, multi-statement
-    // blocks don't have a meaningful last-expression value).
+
     pyodide.runPython(workerData.code);
 
     pyodide.runPython(`
@@ -163,18 +132,17 @@ except TypeError:
     const parsed = JSON.parse(resultJson);
     parentPort.postMessage({ ok: true, result: parsed.v });
   } catch (e) {
-    // Truncate — a stray traceback shouldn't blow past a reasonable payload size.
+
+    // truncate so a stray traceback doesnt cross a specified payload size
     parentPort.postMessage({ ok: false, error: String(e.message || e).slice(0, 2000) });
   }
 }
 
 main().catch((e) => {
-  // Safety net for anything not already caught above — most importantly,
-  // Pyodide's own startup (loadPyodide() itself was never wrapped). Without
-  // this, an unexpected failure anywhere just crashes the worker with no
-  // message at all, and entrypoint.mjs's exit handler reports a bare
-  // "WORKER_EXIT_1" with zero diagnostic value — exactly what happened
-  // during testing before this was added.
+
+  // safety net for anything not already caught above such as loadPyodide() (pyodide startup) which was never wrapped. 
+  // without this, an unexpected failure anywhere crashes the worker with no
+  // message except for entrypoint.mjs's exit handler reporting a "WORKER_EXIT_1"
   parentPort.postMessage({
     ok: false,
     error: `WORKER_INIT_ERROR: ${String(e?.stack || e?.message || e)}`.slice(0, 2000),

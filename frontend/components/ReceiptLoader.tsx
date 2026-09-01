@@ -86,7 +86,7 @@ export default function ReceiptLoader({
   const finalPrintStarted = useRef(false);
   const finishedCalled = useRef(false);
 
-  // Phase 1: print the scripted "working" lines at a steady cadence.
+  // phase 1: print the scripted "working" lines at a steady pace
   useEffect(() => {
     if (errorMessage) return;
     let index = 0;
@@ -101,8 +101,7 @@ export default function ReceiptLoader({
     return () => clearInterval(interval);
   }, [errorMessage]);
 
-  // Phase 2: once the script is done AND the real result has arrived,
-  // print the derived summary lines, then tear off and hand back control.
+  // Phase 2: once the script is done and the result has arrived print the derived summary lines then tear off and hand back control
   useEffect(() => {
     if (!scriptDone || !result || finalPrintStarted.current || errorMessage) return;
     finalPrintStarted.current = true;
@@ -137,7 +136,7 @@ export default function ReceiptLoader({
           }`}
         >
           <div className="border-b border-dashed border-paper-ink/20 px-6 pb-4 pt-6 text-center">
-            <p className="text-eyebrow text-[10px] text-paper-ink/50">Ledger Intake Receipt</p>
+            <p className="text-eyebrow text-[10px] text-paper-ink/50">BAsight Intake Receipt</p>
             <p className="mt-1 truncate font-mono text-xs font-medium text-paper-ink/80">{fileName}</p>
           </div>
 

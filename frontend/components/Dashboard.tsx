@@ -7,7 +7,7 @@ import RevenueChart from "./RevenueChart";
 import TopProductsReceipt from "./TopProductsReceipt";
 import CategoryBreakdown from "./CategoryBreakdown";
 import DataQualityBanner from "./DataQualityBanner";
-import ChatComingSoon from "./ChatComingSoon";
+import ChatFeed from "./ChatFeed";
 import Reveal from "./Reveal";
 
 interface DashboardProps {
@@ -23,8 +23,15 @@ function reasonFor(unavailable: string[], key: string): string | undefined {
 }
 
 export default function Dashboard({ dataset, onReset }: DashboardProps) {
-  const { schema_summary, insights, filename } = dataset;
+  const { schema_summary, insights, filename, dataset_id } = dataset;
   const unavailable = insights.unavailable_metrics;
+
+  // finds whether a numbr needs a currency symbol or not for chat
+  const currencyColumns = new Set(
+    [schema_summary.detected_roles.price, schema_summary.detected_roles.revenue].filter(
+      (c): c is string => !!c
+    )
+  );
 
   return (
     <main className="min-h-screen bg-ink text-paper">
@@ -32,7 +39,7 @@ export default function Dashboard({ dataset, onReset }: DashboardProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-signal" />
-            <p className="font-display text-lg font-bold uppercase tracking-wide">Ledger</p>
+            <p className="font-display text-lg font-bold uppercase tracking-wide">BAsight</p>
           </div>
           <div className="hidden items-center gap-2 font-mono text-xs text-paper/45 sm:flex">
             <span className="max-w-[220px] truncate">{filename}</span>
@@ -57,7 +64,7 @@ export default function Dashboard({ dataset, onReset }: DashboardProps) {
             The read on <span className="text-signal">your sales.</span>
           </h1>
           <p className="mt-3 font-mono text-xs text-paper/45">
-            Cleaned, itemized, and totaled from {filename}.
+            Cleaned, itemized, and totaled.
           </p>
         </Reveal>
 
@@ -151,11 +158,11 @@ export default function Dashboard({ dataset, onReset }: DashboardProps) {
         </div>
 
         <Reveal delayMs={100} className="mt-10">
-          <ChatComingSoon />
+          <ChatFeed datasetId={dataset_id} currencyColumns={currencyColumns} />
         </Reveal>
 
         <p className="mt-14 text-center font-mono text-[10px] text-paper/25">
-          Dataset held for this session only &nbsp;·&nbsp; {schema_summary.row_count.toLocaleString()} rows read
+          Dataset held for this session only
         </p>
       </div>
     </main>

@@ -1,17 +1,6 @@
-"""
-Python-side entry point to the code-execution sandbox. Spawns the Node
-subprocess (sandbox/entrypoint.mjs) which itself hard-kills a worker_thread
-running Pyodide/WASM Python — see pyodide_worker.mjs for what that boundary
-actually guarantees.
+# python-side entry point to the code-execution sandbox, calls the Node subprocess (sandbox/entrypoint.mjs)
+# two independent timeout layers: outer python timeout via subprocess.run(timeout=...) and inner Node.js Worker.terminate()
 
-Two independent timeout layers on purpose: the Node side kills its worker
-via Worker.terminate() (verified during development to actually stop a
-blocking WASM loop, unlike an in-process JS timeout). This module adds a
-second, outer timeout via subprocess.run(timeout=...), which can SIGKILL the
-whole Node process unconditionally. Belt and suspenders — if the inner
-mechanism ever fails for a reason not yet discovered, the outer one still
-bounds worst-case execution time.
-"""
 import json
 import subprocess
 from dataclasses import dataclass
@@ -21,9 +10,8 @@ SANDBOX_DIR = Path(__file__).parent.parent.parent / "sandbox"
 ENTRYPOINT = SANDBOX_DIR / "entrypoint.mjs"
 
 DEFAULT_TIMEOUT_MS = 10_000
-# Outer Python-level timeout is deliberately looser than the inner Node
-# timeout — it should almost never be the one that fires; it exists only to
-# bound total wait time if the inner mechanism doesn't fire as expected.
+# outer python-level timeout is deliberately longer than the inner Node timeout so it never fires first 
+# it exists to kill execution if the inner mechanism doesnt work as expected.
 OUTER_TIMEOUT_BUFFER_SECONDS = 5
 
 
@@ -33,18 +21,9 @@ class SandboxResult:
     result: object | None = None
     error: str | None = None
 
-
+# executes code against a pandas DataFrame reconstructed from csv_data inside an isolated Pyodide/WASM sandbox 
+# returns SandboxResult(ok=False, ...) for any failures so the tool-calling agent can send a result object back to the LLM.
 def run_sandboxed_code(code: str, csv_data: str, timeout_ms: int = DEFAULT_TIMEOUT_MS) -> SandboxResult:
-    """
-    Executes `code` against a pandas DataFrame named `df` (reconstructed
-    from `csv_data`) inside an isolated Pyodide/WASM sandbox. `code` must
-    assign its answer to a variable named `result` (JSON-serializable).
-
-    Returns SandboxResult(ok=False, ...) for any failure mode — bad code,
-    timeout, or the sandbox's own packages being unavailable — rather than
-    raising, since a tool-calling agent needs a result object it can hand
-    back to the LLM to react to, not an exception that aborts the turn.
-    """
     payload = json.dumps({"code": code, "csv_data": csv_data, "timeout_ms": timeout_ms})
     outer_timeout_seconds = (timeout_ms / 1000) + OUTER_TIMEOUT_BUFFER_SECONDS
 

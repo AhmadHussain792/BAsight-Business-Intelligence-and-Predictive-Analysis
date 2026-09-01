@@ -1,4 +1,4 @@
-import { ApiError, DatasetResponse, InsightsResponse, SchemaResponse } from "./types";
+import { ApiError, ChatResponse, DatasetResponse, InsightsResponse, SchemaResponse } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -9,7 +9,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
       const body = await response.json();
       if (body?.detail) detail = body.detail;
     } catch {
-      // response wasn't JSON — fall back to the generic message above
+      // response wasn't JSON: fall back to the generic message above
     }
     throw new ApiError(detail, response.status);
   }
@@ -43,5 +43,19 @@ export async function getInsights(datasetId: string): Promise<InsightsResponse> 
 
 export async function deleteDataset(datasetId: string): Promise<void> {
   const response = await fetch(`${API_BASE}/api/datasets/${datasetId}`, { method: "DELETE" });
+  await handleResponse(response);
+}
+
+export async function sendChatMessage(datasetId: string, message: string): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/api/datasets/${datasetId}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+  return handleResponse<ChatResponse>(response);
+}
+
+export async function resetChat(datasetId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/datasets/${datasetId}/chat`, { method: "DELETE" });
   await handleResponse(response);
 }

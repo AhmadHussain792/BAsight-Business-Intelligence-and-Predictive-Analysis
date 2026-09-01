@@ -1,14 +1,5 @@
-"""
-In-memory dataset store, keyed by dataset_id. This replaces the
-original single global DataFrame: every upload gets its own id, so
-concurrent users/tabs never clobber each other's data.
+# in-memory dataset store, keyed by dataset_id to prevent concurrent users/tabs from clobbering each other's data.
 
-In-memory + TTL eviction is a deliberate choice for now — good enough
-for a demo/single-instance deployment. The moment you need multiple
-backend instances or restart-durability, swap this for a real store
-(e.g. pickle/parquet to disk or a Postgres table) behind the same
-get/put/delete interface so nothing above this layer has to change.
-"""
 import threading
 import uuid
 from dataclasses import dataclass
@@ -32,10 +23,6 @@ class DatasetRecord:
 
 
 class DatasetNotFoundError(LookupError):
-    # Plain LookupError, not KeyError — KeyError.__str__() adds its own
-    # surrounding quotes around the message, which double up when this
-    # message (already quoted internally) gets rendered in an HTTP error
-    # body. LookupError has no such quirk.
     pass
 
 
@@ -91,12 +78,12 @@ class DatasetStore:
             return list(self._store.values())
 
     def _evict_expired_locked(self) -> None:
-        """Must be called while holding self._lock."""
+        # Must be called while holding self._lock
         now = datetime.now(timezone.utc)
         expired = [k for k, v in self._store.items() if now - v.created_at > self._ttl]
         for k in expired:
             del self._store[k]
 
 
-# Single process-wide store instance, imported by the routes.
+# single process-wide store instance, imported by the routes.
 dataset_store = DatasetStore()

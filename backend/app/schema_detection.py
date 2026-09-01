@@ -3,12 +3,8 @@ Heuristic semantic-role detection for columns: figures out which
 column is "the date", "the product", "the revenue", etc. so the
 insights layer doesn't need to know a dataset's exact schema ahead
 of time.
-
-This is name-keyword-first, dtype-second. It's intentionally simple
-and explainable rather than ML-based — good enough for common
-retail/e-commerce export shapes, and a clear upgrade path later is
-to let the LLM confirm/correct ambiguous cases rather than replace
-this heuristic outright.
+This is name-keyword-first, dtype-second. ML-based schema detection is an upgrade 
+path to let the LLM confirm/correct ambiguous cases.
 """
 import re
 
@@ -30,16 +26,11 @@ ROLE_KEYWORDS: dict[str, list[str]] = {
     "customer": ["customer", "client", "buyer", "customer_id", "user_id"],
 }
 
-# Order matters: checked top-to-bottom, first match wins for name-based detection.
+# Order matters: checked top-to-bottom, first match wins for name-based detection
 ROLE_PRIORITY = ["date", "identifier", "revenue", "price", "quantity", "customer", "product", "category"]
 
-
+# token-based keyword matching: "unit_price matched to "price" due to token "price"
 def _match_role_by_name(column_name: str) -> str | None:
-    """Token-aware keyword matching. Plain substring matching would let
-    e.g. the bare keyword "id" match inside "paid_amount" — matching
-    against whole underscore-delimited tokens (or, for multi-word
-    keywords like "unit_price", against a padded underscore-bounded
-    string) avoids that class of false positive."""
     normalized = re.sub(r"[^a-z0-9]+", "_", column_name.lower()).strip("_")
     tokens = set(normalized.split("_"))
     padded = f"_{normalized}_"
@@ -61,20 +52,16 @@ def infer_column_role(column_name: str, series: pd.Series) -> str:
         return "date"
 
     if name_match == "date":
-        # Name suggested a date but dtype conversion didn't succeed
-        # earlier (e.g. inconsistent formats) — still worth flagging.
         return "date"
 
     if name_match in {"revenue", "price", "quantity"}:
         if pd.api.types.is_numeric_dtype(series):
             return name_match
-        # Name implies numeric but values didn't convert cleanly;
-        # fall through to generic role below rather than mislabel.
 
     if name_match in {"identifier", "customer", "product", "category"}:
         return name_match
 
-    # Fallback heuristics when the column name gives no hint.
+    # fallback heuristics when the column name gives no hint.
     if pd.api.types.is_numeric_dtype(series):
         return "numeric_other"
 
@@ -97,7 +84,7 @@ def _safe_sample_values(series: pd.Series, n: int = 3) -> list:
     if non_null.empty:
         return []
     samples = non_null.drop_duplicates().head(n).tolist()
-    # JSON-safety: convert pandas/numpy scalars to native Python types.
+    # convert pandas/numpy scalars to native Python types for JSON-safety
     cleaned = []
     for v in samples:
         if isinstance(v, (pd.Timestamp,)):
@@ -154,10 +141,8 @@ def build_column_schema(df: pd.DataFrame) -> list[ColumnSchema]:
         )
     return columns
 
-
+# picks and returns one column per semantic role (first match) for use by the insights layer
 def detect_core_columns(columns: list[ColumnSchema]) -> dict[str, str]:
-    """Picks one column per semantic role (first match) for use by the
-    insights layer. Returns only roles that were actually found."""
     core: dict[str, str] = {}
     for role in ["date", "product", "category", "quantity", "price", "revenue", "customer", "identifier"]:
         for col in columns:

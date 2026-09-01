@@ -1,8 +1,5 @@
-"""
-Builds the LLM client the API actually uses. Kept separate from
-llm_client.py so swapping providers or adding config options doesn't touch
-the client implementations themselves.
-"""
+# builds the LLM client the API uses
+
 from fastapi import HTTPException
 
 from ..config import settings
@@ -10,14 +7,10 @@ from .llm_client import LLMClient, VertexAILLMClient
 
 _cached_client: LLMClient | None = None
 
-
+# constructs and caches the Vertex AI client
 def get_llm_client() -> LLMClient:
-    """FastAPI dependency. Lazily constructs and caches the Vertex AI
-    client. Client construction itself doesn't fail without credentials
-    (auth happens lazily on the actual API call) — that failure is caught
-    per-request in main.py's /chat endpoint instead, since it's a request-
-    time concern (could recover if credentials are fixed), not a config
-    problem to hide the whole route behind."""
+    # client construction itself doesn't fail without credentials as authentication happens on API calls
+    # this failure is caught in main.py /chat endpoint
     global _cached_client
     if _cached_client is not None:
         return _cached_client
@@ -32,5 +25,7 @@ def get_llm_client() -> LLMClient:
         project=settings.GOOGLE_CLOUD_PROJECT,
         location=settings.GOOGLE_CLOUD_LOCATION,
         model=settings.GEMINI_MODEL,
+        thinking_budget=settings.GEMINI_THINKING_BUDGET,
+        thinking_level=settings.GEMINI_THINKING_LEVEL
     )
     return _cached_client

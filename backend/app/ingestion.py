@@ -1,9 +1,4 @@
-"""
-File reading + cleaning. Turns raw uploaded bytes into a cleaned,
-type-coerced DataFrame. This is the layer that has to survive messy
-real-world SME exports: mixed encodings, currency-formatted numbers,
-inconsistent date strings, stray whitespace, fully-blank rows.
-"""
+# File reading + cleaning. Turns raw uploaded bytes into a cleaned, type-coerced DataFrame.
 import csv
 import io
 import re
@@ -15,9 +10,9 @@ import pandas as pd
 from .config import settings
 from .dtype_utils import is_textual_dtype
 
-# Encodings tried in order. latin-1 is last because it never raises
-# (every byte maps to a character), so it must not be tried first or
-# it would mask genuine utf-8 files.
+
+# Encodings tried in order. latin-1 is last because it never raises an error
+# Trying it first would mask utf-8 encoded files
 CANDIDATE_ENCODINGS = ["utf-8-sig", "utf-8", "cp1252", "latin-1"]
 
 CURRENCY_CHARS = "$£€¥"
@@ -38,15 +33,9 @@ class CleaningReport:
 _SLASH_DATE_PATTERN = re.compile(r"^\s*(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})\s*$")
 
 
+# Scans for such tie-breaking values to determine day-first/month-first convention
+# returns True/False if the convention can be determined, or None if every sampled value is ambiguous.
 def _detect_dayfirst(series: pd.Series, sample_size: int = 500) -> bool | None:
-    """
-    Numeric date strings like 05/04/2025 are ambiguous (5 April vs May
-    4th) unless a value in the column breaks the tie — e.g. 13/04/2025
-    can only be day-first, since no month is 13. Scans for such
-    tie-breaking values. Returns True/False if the convention can be
-    determined, or None if every sampled value is ambiguous (in which
-    case the caller must assume and say so).
-    """
     dayfirst_evidence = False
     monthfirst_evidence = False
     for value in series.dropna().astype(str).head(sample_size):
@@ -73,8 +62,8 @@ class EmptyFileError(ValueError):
     pass
 
 
+# delimiter detection; falls back to comma
 def _sniff_delimiter(sample_text: str) -> str:
-    """Best-effort delimiter detection; falls back to comma."""
     try:
         dialect = csv.Sniffer().sniff(sample_text[:4096], delimiters=",;\t|")
         return dialect.delimiter
@@ -89,16 +78,12 @@ def _decode_csv_bytes(contents: bytes) -> str:
             return contents.decode(encoding)
         except (UnicodeDecodeError, LookupError) as exc:
             last_error = exc
-    # latin-1 should always succeed, so this is unreachable in practice,
-    # but keep an explicit failure path rather than a silent None.
+
+    # an explicit failure path even though latin-1 succeeds in practice
     raise UnsupportedFileError(f"Could not decode file with any supported encoding: {last_error}")
 
-
+# returns a raw (uncleaned) DataFrame and raises UnsupportedFileError / EmptyFileError on bad input
 def read_uploaded_file(filename: str, contents: bytes) -> pd.DataFrame:
-    """
-    Dispatches on file extension and returns a raw (uncleaned) DataFrame.
-    Raises UnsupportedFileError / EmptyFileError on bad input.
-    """
     if not contents:
         raise EmptyFileError("The uploaded file is empty.")
 
@@ -131,9 +116,8 @@ def read_uploaded_file(filename: str, contents: bytes) -> pd.DataFrame:
     return df
 
 
+# appends a numeric suffix to any repeated column name so nothing is overwritten later on
 def _dedupe_column_names(columns: list[str]) -> tuple[list[str], list[str]]:
-    """Appends a numeric suffix to any repeated column name so nothing
-    is silently overwritten downstream."""
     seen: dict[str, int] = {}
     renamed: list[str] = []
     result: list[str] = []
@@ -150,10 +134,9 @@ def _dedupe_column_names(columns: list[str]) -> tuple[list[str], list[str]]:
     return result, renamed
 
 
+# strips currency symbols/commas/percent signs and attempts numeric conversion 
+# returns the converted series if enough values survive, else None
 def _try_convert_numeric(series: pd.Series) -> pd.Series | None:
-    """Strips currency symbols/commas/percent signs and attempts numeric
-    conversion. Returns the converted series if enough values survive,
-    else None."""
     if pd.api.types.is_numeric_dtype(series):
         return None  # already numeric, nothing to do
 
@@ -173,16 +156,16 @@ def _try_convert_numeric(series: pd.Series) -> pd.Series | None:
 
     success_rate = converted.notna().sum() / len(non_null)
     if success_rate >= settings.NUMERIC_CONVERSION_THRESHOLD:
-        # Preserve original nulls rather than the string "nan" artifacts.
+
+        # preserve original nulls rather than the string "nan" artifacts.
         converted[series.isna()] = np.nan
         return converted
     return None
 
 
+# returns (converted_series, note) on success, where note is a human-readable string only when the day-first/month-first convention had to be assumed; 
+# returns None on failure."
 def _try_convert_datetime(series: pd.Series) -> tuple[pd.Series, str | None] | None:
-    """Returns (converted_series, note) on success, where note is a
-    human-readable string only when the day-first/month-first
-    convention had to be assumed rather than detected; None on failure."""
     if pd.api.types.is_datetime64_any_dtype(series):
         return None
     if pd.api.types.is_numeric_dtype(series):
@@ -209,19 +192,16 @@ def _try_convert_datetime(series: pd.Series) -> tuple[pd.Series, str | None] | N
     return converted, note
 
 
+# applies the cleaning pipeline and returns the cleaned frame plus a report describing what was changed.
 def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, CleaningReport]:
-    """
-    Applies the cleaning pipeline and returns the cleaned frame plus a
-    report describing what was changed, so the API can surface it
-    instead of cleaning silently.
-    """
     original_rows, original_cols = df.shape
 
     df = df.copy()
     new_columns, renamed = _dedupe_column_names(list(df.columns))
     df.columns = new_columns
 
-    # Drop rows/columns that are entirely empty.
+
+    # Drop rows/columns that are entirely empty
     df = df.dropna(axis=0, how="all")
     df = df.dropna(axis=1, how="all")
     dropped_rows = original_rows - df.shape[0]
