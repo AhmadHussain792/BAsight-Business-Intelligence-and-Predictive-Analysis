@@ -1,39 +1,39 @@
-date,account_id,category,description,amount,currency,status
-2025-01-02,CHK-001,rent,January rent payment,1250.0,USD,cleared
-2025-01-03,CHK-001,groceries,Supermarket run,154.23,USD,cleared
-2025-01-03,CC-100,dining,Team lunch,0.0,USD,cleared
-2025-01-04,CHK-001,utilities,Electric bill,0.0,USD,pending
-2025-01-05,CC-100,travel,Taxi to client site,32.1,USD,cleared
-2025-01-06,CC-100,travel,Hotel booking,420.0,USD,cleared
-2025-01-06,CC-100,travel,Flight to NYC,612.45,USD,cleared
-2025-01-07,SAV-010,interest,Monthly interest,3.57,USD,cleared
-2025-01-08,CHK-001,groceries,Warehouse club,210.0,USD,cleared
-2025-01-09,CHK-001,rent,Late fee,35.0,USD,cleared
-2025-01-09,CHK-001,rent,Correction entry,-35.0,USD,cleared
-2025-01-10,CC-100,dining,Client dinner,128.4,USD,pending
-2025-01-11,CC-100,dining,Coffee shop,7.15,USD,cleared
-2025-01-11,CHK-001,salary,Monthly payroll,4500.0,USD,cleared
-2025-01-12,CHK-001,utilities,Water bill,45.33,USD,cleared
-,CHK-001,utilities,Invalid date example,60.0,USD,cleared
-,CHK-001,groceries,Missing date example,89.77,USD,cleared
-2025-01-13,,dining,Missing account,25.0,USD,cleared
-2025-01-14,CHK-001,groceries,Corner store,15.23,USD,cleared
-2025-01-15,CHK-001,misc,Office supplies,58.9,USD,cleared
-2025-01-15,CHK-001,misc,Office snacks,12.34,USD,cleared
-2025-01-16,CC-100,travel,Rideshare,18.6,USD,cleared
-2025-01-17,CC-100,dining,Takeout,27.5,USD,cleared
-2025-01-18,SAV-010,transfer,To checking,-500.0,USD,cleared
-2025-01-18,CHK-001,transfer,From savings,500.0,USD,cleared
-2025-01-19,CHK-001,fees,ATM fee,3.0,USD,cleared
-2025-01-20,CHK-001,fees,Account maintenance fee,15.0,USD,cleared
-2025-01-21,CHK-001,groceries,Online grocery order,132.49,USD,pending
-2025-01-22,CHK-001,rent,February rent scheduled,1250.0,USD,scheduled
-2025-01-23,CC-100,travel,Hotel incidentals,27.8,USD,cleared
-2025-01-24,CC-100,dining,Room service,42.0,USD,cleared
-2025-01-25,CHK-001,misc,Charity donation,100.0,USD,cleared
-2025-01-26,CHK-001,groceries,Farmer's market,64.12,USD,cleared
-2025-01-27,SAV-010,interest,Bonus interest,5.1,USD,cleared
-2025-01-28,CHK-001,rent,Adjustment,0.0,USD,pending
-2025-01-29,CC-100,travel,Car rental,210.75,USD,cleared
-2025-01-30,CHK-001,utilities,Gas bill,38.9,USD,cleared
-,CHK-001,groceries,Null date example,56.44,USD,cleared
+date,customer_id,category,description,amount,currency,status
+2025-01-02,CUST-001,Electronics,Wireless mouse,1250.0,USD,paid
+2025-01-03,CUST-001,Home & Living,Smart desk lamp,154.23,USD,paid
+2025-01-03,CUST-002,Apparel,Running sneakers,0.0,USD,pending
+2025-01-04,CUST-001,Office Supplies,Ergonomic chair,0.0,USD,pending
+2025-01-05,CUST-002,Beauty,Hydrating facial serum,32.1,USD,paid
+2025-01-06,CUST-002,Home & Living,Memory foam pillow,420.0,USD,paid
+2025-01-06,CUST-002,Electronics,Noise cancelling headphones,612.45,USD,paid
+2025-01-07,CUST-003,Accessories,Sunglasses,3.57,USD,paid
+2025-01-08,CUST-001,Home & Living,Kitchen mixer,210.0,USD,paid
+2025-01-09,CUST-001,Electronics,USB-C hub,35.0,USD,paid
+2025-01-09,CUST-001,Electronics,Replacement adapter,-35.0,USD,refunded
+2025-01-10,CUST-002,Apparel,Premium hoodie,128.4,USD,pending
+2025-01-11,CUST-002,Beauty,Organic hand cream,7.15,USD,paid
+2025-01-11,CUST-001,Office Supplies,Monitor stand,4500.0,USD,paid
+2025-01-12,CUST-001,Home & Living,Air purifier filter,45.33,USD,paid
+, CUST-001,Home & Living,Invalid date example,60.0,USD,paid
+, CUST-001,Electronics,Missing date example,89.77,USD,paid
+2025-01-13,,Apparel,Missing customer,25.0,USD,paid
+2025-01-14,CUST-001,Groceries,Organic produce box,15.23,USD,paid
+2025-01-15,CUST-001,Office Supplies,Notebook set,58.9,USD,paid
+2025-01-15,CUST-001,Office Supplies,Sticky notes pack,12.34,USD,paid
+2025-01-16,CUST-002,Accessories,Leather wallet,18.6,USD,paid
+2025-01-17,CUST-002,Apparel,Classic tee,27.5,USD,paid
+2025-01-18,CUST-003,Electronics,Tablet cover,-500.0,USD,refunded
+2025-01-18,CUST-001,Electronics,Wireless charger,500.0,USD,paid
+2025-01-19,CUST-001,Accessories,Phone case,3.0,USD,paid
+2025-01-20,CUST-001,Office Supplies,Desk organizer,15.0,USD,paid
+2025-01-21,CUST-001,Groceries,Organic snack basket,132.49,USD,pending
+2025-01-22,CUST-001,Electronics,Smart watch preorder,1250.0,USD,scheduled
+2025-01-23,CUST-002,Home & Living,Portable blender,27.8,USD,paid
+2025-01-24,CUST-002,Beauty,Vitamin C serum,42.0,USD,paid
+2025-01-25,CUST-001,Office Supplies,Reusable water bottle,100.0,USD,paid
+2025-01-26,CUST-001,Groceries,Seasonal fruit box,64.12,USD,paid
+2025-01-27,CUST-003,Accessories,Travel pouch,5.1,USD,paid
+2025-01-28,CUST-001,Electronics,Replacement cable,0.0,USD,pending
+2025-01-29,CUST-002,Home & Living,Portable fan,210.75,USD,paid
+2025-01-30,CUST-001,Home & Living,Cozy throw blanket,38.9,USD,paid
+, CUST-001,Groceries,Null date example,56.44,USD,paid

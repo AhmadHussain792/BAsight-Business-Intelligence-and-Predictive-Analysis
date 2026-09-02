@@ -7,14 +7,15 @@ Upload a sales spreadsheet, get a cleaned insights dashboard like in Power BI or
 ![Next.js](https://img.shields.io/badge/Next.js-14-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688) ![Vertex AI](https://img.shields.io/badge/Google%20Cloud-Vertex%20AI-4285F4)
 
 ## Demo
+Click on the images below to see the video demonstration:
 
-**Part 1: upload to dashboard**
+**Part 1: upload data to dashboard**
 
-<video src="demo/dashboard_demo.mp4" controls width="100%"></video>
+[![Dashboard demo](demo/dashboard_demo_preview.png)](demo/dashboard_demo.mp4)
 
-**Part 2: asking LLM questions**
+**Part 2: asking the LLM questions**
 
-<video src="demo/llm_agent_demo.mp4" controls width="100%"></video>
+[![LLM agent demo](demo/llm_chat_preview.png)](demo/llm_agent_demo.mp4)
 
 The `gemini-2.5-flash` model is used in the demo. Check out `backend\README.md` and `frontend\README.md` for a detailed explanation and breakdown of the code. A shorter explanation is given below:
 
@@ -95,7 +96,7 @@ backend/
                                 the orchestration loop, the LLM client
   sandbox/            Isolated code execution for the agent's fallback tool
 test_data/         Sample files for testing
-demo/              video demos that show the app working
+demo/              video and image previews that show the app working
 ```
 
 ## Running it locally
