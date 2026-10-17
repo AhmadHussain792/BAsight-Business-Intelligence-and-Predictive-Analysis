@@ -107,7 +107,7 @@ Backend:
 cd backend
 pip install -r requirements.txt
 cp .env.example .env   # set GOOGLE_CLOUD_PROJECT for chat, everything else works without it
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 
 cd sandbox && npm install   # separately, for the fallback tool
 ```
