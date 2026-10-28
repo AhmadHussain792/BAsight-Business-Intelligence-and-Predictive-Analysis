@@ -11,11 +11,11 @@ Click on the images below to see the video demonstration:
 
 **Part 1: upload data to dashboard**
 
-[![Dashboard demo](demo/dashboard_demo_preview.png)](demo/dashboard_demo.mp4)
+[![Dashboard Demo Video](demo/dashboard_preview.png)](https://www.loom.com/playlists/5282d6bd-b2a9-4b1c-a171-580294455249/view?v=693342e9c76b43358abf58a13d529656)
 
 **Part 2: asking the LLM questions**
 
-[![LLM agent demo](demo/llm_chat_preview.png)](demo/llm_agent_demo.mp4)
+[![LLM Agent Demo Video](demo/dashboard_preview.png)](https://www.loom.com/playlists/5282d6bd-b2a9-4b1c-a171-580294455249/view?v=e721dd3dd24e42c3806517dd58cdbfb7)
 
 The `gemini-2.5-flash` model is used in the demo. Check out `backend\README.md` and `frontend\README.md` for a detailed explanation and breakdown of the code. A shorter explanation is given below:
 
