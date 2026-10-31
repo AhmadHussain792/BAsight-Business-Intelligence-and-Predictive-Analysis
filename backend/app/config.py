@@ -1,4 +1,3 @@
-# central configuration: Reads from environment variables (.env) but has defaults set
 import os
 
 from dotenv import load_dotenv

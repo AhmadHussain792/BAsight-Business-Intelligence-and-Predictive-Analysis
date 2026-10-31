@@ -1,5 +1,3 @@
-# FastAPI application entrypoint.
-
 from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 

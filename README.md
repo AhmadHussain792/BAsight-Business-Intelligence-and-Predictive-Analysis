@@ -2,7 +2,9 @@
 
 **Business Intelligence & Predictive Analytics for retail and e-commerce.**
 
-Upload a sales spreadsheet, get a cleaned insights dashboard like in Power BI or Tableau. But BAsight goes one step further: ask questions in plain English that are answered by a tool-calling AI agent that computes against your actual data, ensuring accuracy and deeper analysis.
+Upload a sales spreadsheet, get a cleaned insights dashboard like in Power BI or Tableau. But BAsight goes one step further: ask financial questions and what-if scenarios that are answered by a tool-calling AI agent that computes against your actual data, ensuring accuracy and deeper analysis. 
+
+**Try the live app and see for yourself:** [basight.vercel.app](https://basight.vercel.app/)
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688) ![Vertex AI](https://img.shields.io/badge/Google%20Cloud-Vertex%20AI-4285F4)
 

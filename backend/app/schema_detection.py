@@ -1,11 +1,4 @@
-"""
-Heuristic semantic-role detection for columns: figures out which
-column is "the date", "the product", "the revenue", etc. so the
-insights layer doesn't need to know a dataset's exact schema ahead
-of time.
-This is name-keyword-first, dtype-second. ML-based schema detection is an upgrade 
-path to let the LLM confirm/correct ambiguous cases.
-"""
+# semantic role detection of columns
 import re
 
 import numpy as np

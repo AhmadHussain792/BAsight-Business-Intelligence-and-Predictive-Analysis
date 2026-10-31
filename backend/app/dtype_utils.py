@@ -1,4 +1,3 @@
-# dtype-detection helpers shared by ingestion and schema_detection.
 import pandas as pd
 
 def is_textual_dtype(series: pd.Series) -> bool:

@@ -1,7 +1,5 @@
-
-# computes the dashboard metrics from a cleaned DataFrame + detected core columns. 
+# computes the dashboard metrics from a cleaned dataframe + detected core columns. 
 # if a required column role wasn't found, the metric is omitted and a reason is added to `unavailable_metrics`.
-
 import pandas as pd
 
 from .models import CategoryInsight, InsightsResponse, ProductInsight, TimeSeriesPoint

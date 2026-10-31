@@ -1,6 +1,6 @@
 import { ApiError, ChatResponse, DatasetResponse, InsightsResponse, SchemaResponse } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://basight.vercel.app/";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -9,7 +9,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
       const body = await response.json();
       if (body?.detail) detail = body.detail;
     } catch {
-      // response wasn't JSON: fall back to the generic message above
+      // response wasnt JSON: fall back to the generic message above
     }
     throw new ApiError(detail, response.status);
   }

@@ -1,9 +1,3 @@
-"""
-File reading + cleaning. Turns raw uploaded bytes into a cleaned,
-type-coerced DataFrame. This is the layer that has to survive messy
-real-world SME exports: mixed encodings, currency-formatted numbers,
-inconsistent date strings, stray whitespace, fully-blank rows.
-"""
 import csv
 import io
 import re
